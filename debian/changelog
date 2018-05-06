@@ -1,5 +1,5 @@
-urbit (0.2-1) unstable; urgency=low
+urbit (0.5-1) unstable; urgency=medium
 
-  * Initial release
+  * hoon %143; new boot sequence; %jael support
 
- -- Urbit <urbit@urbit.org>  Wed, 21 May 2014 15:12:49 -0700
+ -- Ted Blackman <ted@tlon.io>  Thu, 12 Oct 2017 17:11:53 -0700

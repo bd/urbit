@@ -274,83 +274,16 @@ _sist_sing(u3_noun ovo)
 }
 
 
-/* _sist_home(): create ship directory.
+/* _sist_home(): remains of "create ship directory" after refactor to u3m_boot().
 */
 static void
 _sist_home()
 {
-  c3_c    ful_c[2048];
-
-  //  Create subdirectories.
-  //
-  {
-    mkdir(u3_Host.dir_c, 0700);
-
-    snprintf(ful_c, 2048, "%s/.urb", u3_Host.dir_c);
-    mkdir(ful_c, 0700);
-
-    snprintf(ful_c, 2048, "%s/.urb/get", u3_Host.dir_c);
-    if ( 0 != mkdir(ful_c, 0700) ) {
-      perror(ful_c);
-      u3_lo_bail();
-    }
-
-    snprintf(ful_c, 2048, "%s/.urb/put", u3_Host.dir_c);
-    if ( 0 != mkdir(ful_c, 0700) ) {
-      perror(ful_c);
-      u3_lo_bail();
-    }
-
-    snprintf(ful_c, 2048, "%s/.urb/sis", u3_Host.dir_c);
-    if ( 0 != mkdir(ful_c, 0700) ) {
-      perror(ful_c);
-      u3_lo_bail();
-    }
-  }
-
-  //  Copy urbit.pill.
-  //
-  {
-    snprintf(ful_c, 2048, "cp %s/urbit.pill %s/.urb",
-                    U3_LIB, u3_Host.dir_c);
-    printf("%s\r\n", ful_c);
-    if ( 0 != system(ful_c) ) {
-      uL(fprintf(uH, "could not %s\n", ful_c));
-      u3_lo_bail();
-    }
-  }
-
 #if 1
   //  Copy zod files, if we're generating a carrier.
   //
   if ( u3_Host.ops_u.imp_c ) {
     u3_unix_ef_initial_into();
-
-    //  snprintf(ful_c, 2048, "mkdir %s/%s",
-    //                  u3_Host.dir_c, u3_Host.ops_u.imp_c+1);
-    //  printf("%s\r\n", ful_c);
-    //  if ( 0 != system(ful_c) ) {
-    //    uL(fprintf(uH, "could not %s\n", ful_c));
-    //    u3_lo_bail();
-    //  }
-
-    //  snprintf(ful_c, 2048, "cp -r %s/zod %s/%s/in",
-    //                  U3_LIB, u3_Host.dir_c, u3_Host.ops_u.imp_c+1);
-    //  printf("%s\r\n", ful_c);
-    //  if ( 0 != system(ful_c) ) {
-    //    uL(fprintf(uH, "could not %s\n", ful_c));
-    //    u3_lo_bail();
-    //  }
-
-
-
-    //  snprintf(ful_c, 2048, "cp -r %s/zod %s/%s/out",
-    //                  U3_LIB, u3_Host.dir_c, u3_Host.ops_u.imp_c+1);
-    //  printf("%s\r\n", ful_c);
-    //  if ( 0 != system(ful_c) ) {
-    //    uL(fprintf(uH, "could not %s\n", ful_c));
-    //    u3_lo_bail();
-    //  }
   }
 #endif
 }
@@ -468,14 +401,14 @@ _sist_bask(c3_c* pop_c, u3_noun may)
 }
 #endif
 
-/* u3_sist_rand(): fill a 256-bit (8-word) buffer.
+/* u3_sist_rand(): fill a 512-bit (16-word) buffer.
 */
 void
 u3_sist_rand(c3_w* rad_w)
 {
   c3_i fid_i = open(DEVRANDOM, O_RDONLY);
 
-  if ( 32 != read(fid_i, (c3_y*) rad_w, 32) ) {
+  if ( 64 != read(fid_i, (c3_y*) rad_w, 64) ) {
     c3_assert(!"lo_rand");
   }
   close(fid_i);
@@ -611,7 +544,7 @@ _sist_zest()
   //  Generate a 31-bit salt.
   //
   {
-    c3_w rad_w[8];
+    c3_w rad_w[16];
 
     c3_rand(rad_w);
     sal_l = (0x7fffffff & rad_w[0]);
@@ -620,7 +553,7 @@ _sist_zest()
   //  Create and save a passcode.
   //
   {
-    c3_w rad_w[8];
+    c3_w rad_w[16];
     u3_noun pas;
 
     c3_rand(rad_w);
@@ -1017,9 +950,8 @@ _sist_rest()
       end_d = (tar_d - (c3_d)lar_u.len_w);
 
       if ( ent_d < old_d ) {
-        //  XX this could be a break if we didn't want to see the sequence
-        //  number of the first event.
-        continue;
+        /*  change to continue to check all events  */
+        break;
       }
 
       img_w = c3_malloc(4 * lar_u.len_w);
@@ -1050,6 +982,9 @@ _sist_rest()
         continue;
       }
 
+#if 0
+      // disable encryption for now
+      //
       if ( u3A->key ) {
         u3_noun dep;
 
@@ -1063,6 +998,7 @@ _sist_rest()
           u3z(dep);
         }
       }
+#endif
       roe = u3nc(u3ke_cue(ron), roe);
     }
     u3A->ent_d = c3_max(las_d + 1ULL, old_d);
@@ -1223,10 +1159,10 @@ _sist_rest()
 static u3_noun
 _sist_zen()
 {
-  c3_w rad_w[8];
+  c3_w rad_w[16];
 
   c3_rand(rad_w);
-  return u3i_words(8, rad_w);
+  return u3i_words(16, rad_w);
 }
 
 /* u3_sist_boot(): restore or create.
@@ -1240,14 +1176,8 @@ u3_sist_boot(void)
     u3_noun pig = u3_none;
 
     if ( 0 == u3_Host.ops_u.imp_c ) {
-      c3_c get_c[2049];
-      snprintf(get_c, 2048, "%s/.urb/get", u3_Host.dir_c);
-      if ( 0 == access(get_c, 0) ) {
-          uL(fprintf(uH, "pier: already built\n"));
-          u3_lo_bail();
-      }
       u3_noun ten = _sist_zen();
-      uL(fprintf(uH, "generating 2048-bit RSA pair...\n"));
+      uL(fprintf(uH, "generating curve25519 key pair...\n"));
 
       pig = u3nq(c3__make, u3_nul, 11, u3nc(ten, u3_Host.ops_u.fak));
     }
@@ -1263,7 +1193,12 @@ u3_sist_boot(void)
         u3_noun gen = u3_nul;
         u3_noun gun = u3_nul;
         if (c3n == u3_Host.ops_u.fak) {
-          gen = _sist_text("generator");
+          if ( 0 != u3_Host.ops_u.gen_c) {
+            gen = u3i_string(u3_Host.ops_u.gen_c);
+          }
+          else {
+            gen = _sist_text("generator"); // XX move to main.c
+          }
           gun = u3dc("slaw", c3__uw, gen);
 
           if ( u3_nul == gun ) {

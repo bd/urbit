@@ -19,9 +19,9 @@
 #   define _ap_jet_rake  1
 #   define _ap_jet_hack  2
 
+#if 0
     static u3_noun
     _open_in(u3_noun ter, u3_noun gen);
-#if 0
     /* ~(. al gen)
     */
     static u3_noun
@@ -32,7 +32,6 @@
 
       return u3i_molt(gat, u3x_sam, u3nc(c3__herb, u3k(gen)), 0);
     }
-#endif
     /* ~(. al gen)
     */
     static u3_noun
@@ -590,7 +589,7 @@
   _open_do_pqrs(sgcn) //  ~%
   {
     return u3nt(c3__sggl,
-                u3nq(c3__fast,
+                u3nq(c3__sgcn,
                      c3__clls,
                      u3nt(c3__dtzz, u3_blip, u3k(p_gen)),
                      u3nt(u3nc(c3__zpts, u3k(q_gen)),
@@ -609,7 +608,7 @@
   _open_do_pq(sgls)   //  ~+
   {
     return u3nt(c3__sggr,
-                u3nq(c3__memo, c3__dtzz, u3_blip, u3k(p_gen)),
+                u3nq(c3__sgls, c3__dtzz, u3_blip, u3k(p_gen)),
                 u3k(q_gen));
   }
   _open_do_pqr(sgpm)   //  ~&
@@ -984,10 +983,11 @@
         return u3qfp_hack(ter, gen);
       }
     }
+#endif
 
 /* boilerplate
 */
-  u3_noun
+  static u3_noun
   _ap_core(u3_noun ter,
            u3_noun gen)
   {
@@ -1010,6 +1010,7 @@
   _ap_open_l(u3_noun ter,
              u3_noun gen)
   {
+#if 0
     u3_noun pro = _open_in(ter, gen);
 
     if ( u3_none != pro ) {
@@ -1017,10 +1018,20 @@
     } else {
       return _ap_open_n(ter, gen);
     }
+#else
+    return _ap_open_n(ter, gen);
+#endif
   }
 
   u3_noun
   u3qfp_open(u3_noun ter,
+             u3_noun gen)
+  {
+    return _ap_open_l(ter, gen);
+  }
+
+  u3_noun
+  u3qfp_nepo(u3_noun ter,
              u3_noun gen)
   {
     return _ap_open_l(ter, gen);
@@ -1039,3 +1050,4 @@
       return u3qfp_open(ter, gen);
     }
   }
+
